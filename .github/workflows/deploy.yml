@@ -25,10 +25,10 @@ jobs:
 
     steps:
       - name: Baixar o código-fonte
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Configurar Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -50,17 +50,17 @@ jobs:
 
     steps:
       - name: Baixar o código-fonte
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Construir imagem Docker
         run: |
           docker build \
             --tag caminhoes-api:${{ github.sha }} \
-            -f backend/Dockerfile \
+            --file backend/Dockerfile \
             backend
 
   deploy:
-    name: 3. CD - Deploy no Render
+    name: 3. CD - Disparar deploy no Render
     needs: [ci, docker-build]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -68,12 +68,12 @@ jobs:
     steps:
       - name: Acionar Deploy Hook do Render
         env:
-         RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
           set -euo pipefail
 
           if [ -z "${RENDER_DEPLOY_HOOK_URL}" ]; then
-            echo "::error::Segredo RENDER_DEPLOY_HOOK_URL não configurado."
+            echo "::error::Secret RENDER_DEPLOY_HOOK_URL não configurado."
             exit 1
           fi
 
@@ -87,7 +87,7 @@ jobs:
 
           if [ "${HTTP_STATUS}" != "200" ] && \
              [ "${HTTP_STATUS}" != "201" ]; then
-            echo "::error::Falha ao acionar o deploy."
+            echo "::error::Falha ao acionar deploy no Render."
             exit 1
           fi
 
