@@ -17,9 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # ----------------------------------------------------------------------------
   # 1. Integração Contínua: valida tipos e compila o projeto
-  # ----------------------------------------------------------------------------
   ci:
     name: 1. CI - Checagem de tipos e build
     runs-on: ubuntu-latest
@@ -43,9 +41,7 @@ jobs:
       - name: Compilar o projeto (tsc)
         run: npm run build
 
-  # ----------------------------------------------------------------------------
   # 2. Validação do contêiner: a imagem Docker precisa ser construída sem erros
-  # ----------------------------------------------------------------------------
   docker-build:
     name: 2. CD - Build da imagem Docker
     needs: ci
@@ -58,9 +54,7 @@ jobs:
       - name: Construir a imagem Docker
         run: docker build --tag caminhoes-api:${{ github.sha }} .
 
-  # ----------------------------------------------------------------------------
   # 3. Implantação contínua: só roda se CI e build do Docker passaram
-  # ----------------------------------------------------------------------------
   deploy:
     name: 3. CD - Disparar deploy no Render
     needs: [ci, docker-build]
