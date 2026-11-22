@@ -1,0 +1,34 @@
+# Dependências e build (são gerados dentro da imagem)
+node_modules
+dist
+
+# Controle de versão e CI
+.git
+.gitignore
+.github
+
+# Segredos e variáveis locais
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testes e cobertura
+coverage
+*.test.ts
+*.spec.ts
+__tests__
+tests
+
+# Arquivos que não fazem parte da imagem
+Dockerfile
+.dockerignore
+docker-compose.yml
+requests.http
+README.md
+.vscode
+.idea
+.DS_Store

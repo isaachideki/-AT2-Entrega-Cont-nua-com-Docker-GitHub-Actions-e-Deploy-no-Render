@@ -8,8 +8,12 @@ const options = {
       version: '1.0.0',
       description: 'API RESTful para cadastro e gerenciamento de caminhões.',
     },
-    servers: [{ url: 'http://localhost:3000', description: 'Servidor local' }],
-    tags: [{ name: 'Caminhões', description: 'Operações de CRUD de caminhões' }],
+    // URL relativa: o Swagger UI usa o endereço onde a API está hospedada (local ou Render).
+    servers: [{ url: '/', description: 'Servidor atual' }],
+    tags: [
+      { name: 'Caminhões', description: 'Operações de CRUD de caminhões' },
+      { name: 'Health', description: 'Monitoramento de integridade da API' },
+    ],
     components: {
       schemas: {
         CaminhaoInput: {
