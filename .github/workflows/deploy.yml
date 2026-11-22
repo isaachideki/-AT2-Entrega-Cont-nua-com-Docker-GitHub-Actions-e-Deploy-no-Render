@@ -1,26 +1,24 @@
+
 name: CI/CD - Backend Caminhões (Deploy no Render)
 
 on:
-  # Dispara a cada push na branch main
   push:
     branches:
       - main
-  # Permite executar manualmente pela aba Actions
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# Nunca cancela um deploy em andamento; novas execuções aguardam na fila
 concurrency:
   group: cd-producao
   cancel-in-progress: false
 
 jobs:
-  # 1. Integração Contínua: valida tipos e compila o projeto
   ci:
     name: 1. CI - Checagem de tipos e build
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: backend
@@ -29,23 +27,22 @@ jobs:
       - name: Baixar o código-fonte
         uses: actions/checkout@v4
 
-      - name: Configurar o Node.js 24 (com cache do npm)
+      - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
-      - name: Instalar dependências (npm ci)
+      - name: Instalar dependências
         run: npm ci
 
-      - name: Checagem estática de tipos (tsc --noEmit)
+      - name: Verificar tipos TypeScript
         run: npm run type-check
 
-      - name: Compilar o projeto (tsc)
+      - name: Compilar projeto
         run: npm run build
 
-  # 2. Validação do contêiner: a imagem Docker precisa ser construída sem erros
   docker-build:
     name: 2. CD - Build da imagem Docker
     needs: ci
@@ -55,47 +52,46 @@ jobs:
       - name: Baixar o código-fonte
         uses: actions/checkout@v4
 
-      - name: Construir a imagem Docker
-        run: docker build --tag caminhoes-api:${{ github.sha }} ./backend
+      - name: Construir imagem Docker
+        run: |
+          docker build \
+            --tag caminhoes-api:${{ github.sha }} \
+            -f backend/Dockerfile \
+            backend
 
-  # 3. Implantação contínua: só roda se CI e build do Docker passaram
   deploy:
-    name: 3. CD - Disparar deploy no Render
+    name: 3. CD - Deploy no Render
     needs: [ci, docker-build]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Acionar o Deploy Hook do Render
+      - name: Acionar Deploy Hook do Render
         env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+         RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
           set -euo pipefail
 
           if [ -z "${RENDER_DEPLOY_HOOK_URL}" ]; then
-            echo "::error::O segredo RENDER_DEPLOY_HOOK_URL não está configurado no repositório."
+            echo "::error::Segredo RENDER_DEPLOY_HOOK_URL não configurado."
             exit 1
           fi
 
-          echo "Disparando o deploy no Render..."
           HTTP_STATUS=$(curl --silent --show-error --max-time 30 \
-            --output resposta.json --write-out '%{http_code}' \
+            --output resposta.json \
+            --write-out '%{http_code}' \
             -X POST "${RENDER_DEPLOY_HOOK_URL}")
 
-          echo "Status HTTP retornado pelo Render: ${HTTP_STATUS}"
+          echo "Status HTTP: ${HTTP_STATUS}"
           cat resposta.json || true
-          echo
 
-          if [ "${HTTP_STATUS}" != "200" ] && [ "${HTTP_STATUS}" != "201" ]; then
-            echo "::error::Falha ao acionar o Deploy Hook (status ${HTTP_STATUS})."
+          if [ "${HTTP_STATUS}" != "200" ] && \
+             [ "${HTTP_STATUS}" != "201" ]; then
+            echo "::error::Falha ao acionar o deploy."
             exit 1
           fi
 
       - name: Resumo da entrega
         run: |
-          {
-            echo "### Deploy acionado no Render"
-            echo "- **Commit:** \`${{ github.sha }}\`"
-            echo "- **Autor:** ${{ github.actor }}"
-            echo "- **Gatilho:** Deploy Hook (Auto-Deploy desativado no Render)"
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Deploy acionado com sucesso no Render."
+          echo "Commit: ${{ github.sha }}"
