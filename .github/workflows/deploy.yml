@@ -24,7 +24,7 @@ jobs:
         working-directory: backend
 
     steps:
-      - name: Baixar o código-fonte
+      - name: Checkout do código
         uses: actions/checkout@v5
 
       - name: Configurar Node.js
@@ -37,7 +37,7 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
-      - name: Verificar tipos TypeScript
+      - name: Checagem de tipos
         run: npm run type-check
 
       - name: Compilar projeto
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar o código-fonte
+      - name: Checkout do código
         uses: actions/checkout@v5
 
       - name: Construir imagem Docker
@@ -73,7 +73,7 @@ jobs:
           set -euo pipefail
 
           if [ -z "${RENDER_DEPLOY_HOOK_URL}" ]; then
-            echo "::error::Secret RENDER_DEPLOY_HOOK_URL não configurado."
+            echo "::error::Secret não configurado."
             exit 1
           fi
 
@@ -87,11 +87,11 @@ jobs:
 
           if [ "${HTTP_STATUS}" != "200" ] && \
              [ "${HTTP_STATUS}" != "201" ]; then
-            echo "::error::Falha ao acionar deploy no Render."
+            echo "::error::Falha ao acionar deploy."
             exit 1
           fi
 
       - name: Resumo da entrega
         run: |
-          echo "Deploy acionado com sucesso no Render."
+          echo "Deploy acionado com sucesso."
           echo "Commit: ${{ github.sha }}"
