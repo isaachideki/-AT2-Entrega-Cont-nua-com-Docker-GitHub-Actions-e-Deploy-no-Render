@@ -4,7 +4,7 @@ import { Router } from 'express';
  * Versão exibida no health check.
  * Altere este valor (ex.: 1.0.1) para demonstrar uma entrega contínua rastreável.
  */
-const VERSAO = '1.0.0';
+const VERSAO = '1.0.1';
 
 const router = Router();
 
