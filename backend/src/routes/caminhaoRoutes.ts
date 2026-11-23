@@ -25,27 +25,7 @@ router.get('/', listarCaminhoes);
 
 /**
  * @openapi
- * /caminhoes/{id}:
- *   get:
- *     tags: [Caminhões]
- *     summary: Busca um caminhão por ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *           minimum: 1
- *     responses:
- *       200:
- *         description: Caminhão encontrado.
- *       400:
- *         description: ID inválido.
- *       404:
- *         description: Caminhão não encontrado.
- *       500:
- *         description: Erro interno.
- */
+
 router.get('/:id', buscarCaminhao);
 
 /**
